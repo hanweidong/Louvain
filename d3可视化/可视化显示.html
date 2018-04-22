@@ -1,0 +1,95 @@
+<html>
+<head>
+<title>Louvain</title>
+<style>
+
+</style>
+</head>
+<body>
+<script src="../d3/d3.min.js" charset="utf-8"></script>
+<script>
+//1.绘制画布
+var width = 2500;
+var height = 800;
+var svg = d3.select("body")
+			.append("svg")
+			.attr("width",width)
+			.attr("height",height);
+//2.读取文件
+d3.json("facebook.json",
+
+function(error, jsondata){
+		if(error)
+			console.log(error);
+//3.数据转换
+console.log(jsondata);
+console.log(jsondata.groups);
+		var force = d3.layout.force()
+				.nodes(jsondata.groups)		//指定节点数组
+				.links(jsondata.links)		//指定连线数组
+				.size([width,height])	//指定范围
+				.linkDistance(2)	//指定连线长度
+				.charge(-20);	//相互之间的作用力
+		force.start();//力学作用生效
+	
+	
+console.log(jsondata.groups);
+console.log(jsondata.nodes);
+console.log(jsondata.links);
+
+//4.添加连线
+var svg_edges=svg.selectAll("line")
+				.data(jsondata.links)
+				.enter()
+				.append("line")
+				.style("stroke","#ccc")
+				.style("stroke-width",1);
+				
+//5.添加节点
+var color=d3.scale.category20();
+var svg_nodes = svg.selectAll("circle")
+					.data(jsondata.groups)
+					.enter()
+					.append("circle")
+					.attr("r",3)
+					.style("fill",function(d,i){
+						return color(d.group);
+					})
+					.call(force.drag);	//使得节点能够拖动	
+					
+//6.添加节点的文字
+/*var svg_texts = svg.selectAll("text")
+				.data(jsondata.groups)
+				.enter()
+				.append("text")
+				.style("fill","black")
+				.attr("dx",10)
+				.attr("dy",8)
+				.text(function(d){
+					return d.group;
+				});*/
+				
+//7.更新
+		force.on("tick", function(){	//对于每一个时间间隔
+		
+			 //更新连线坐标
+			 svg_edges.attr("x1",function(d){ return d.source.x; })
+			 		.attr("y1",function(d){ return d.source.y; })
+			 		.attr("x2",function(d){ return d.target.x; })
+			 		.attr("y2",function(d){ return d.target.y; });
+			 
+			 //更新节点坐标
+			 svg_nodes.attr("cx",function(d){ return d.x; })
+			 		.attr("cy",function(d){ return d.y; });
+
+			 //更新文字坐标
+			 svg_texts.attr("x", function(d){ return d.x; })
+			 	.attr("y", function(d){ return d.y; });
+		});	
+});
+
+
+
+</script>
+</body>
+</html>
